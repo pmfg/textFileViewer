@@ -21,6 +21,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -157,14 +158,19 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void readTextFromUri(Uri uri) throws IOException {
-        InputStream inputStream = getContentResolver().openInputStream(uri);
-        BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-        StringBuilder stringBuilder = new StringBuilder();
-        String line;
-        while ((line = reader.readLine()) != null) {
-            stringBuilder.append(line+"\n");
+        if(Objects.requireNonNull(getContentResolver().getType(uri)).split("/")[0].equals("text")) {
+            InputStream inputStream = getContentResolver().openInputStream(uri);
+            BufferedReader reader = new BufferedReader(new InputStreamReader(Objects.requireNonNull(inputStream)));
+            StringBuilder stringBuilder = new StringBuilder();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                stringBuilder.append(line).append("\n");
+            }
+            testFile.setText(stringBuilder.toString());
+            //logCat.terminal("core_", stringBuilder.toString());
+        }else{
+            logCat.terminal("core_", getContentResolver().getType(uri));
+            logCat.snackBar(mainActivityLayout, "File not supported ( "+getContentResolver().getType(uri)+" )",true, LogCatUtil.INFO_TYPE.ALERT);
         }
-        testFile.setText(stringBuilder.toString());
-        //logCat.terminal("core_", stringBuilder.toString());
     }
 }
