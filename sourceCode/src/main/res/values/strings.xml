@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Text File Viewer</string>
+    <string name="icon_toast">Icon Toast</string>
+    <string name="text_toast">Text Toast</string>
+    <string name="space" />
+    <string name="open_file">Open File</string>
+</resources>

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/openFile"
+        android:icon="@drawable/file"
+        app:showAsAction="ifRoom"
+        android:title="@string/open_file" />
+
+    <!--<item
+        android:id="@+id/menu_main_setting2"
+        android:icon="@drawable/ic_settings"
+        android:orderInCategory="200"
+        app:showAsAction="always"
+        android:actionLayout="@layout/toolbar"
+        android:title="Setting" /> -->
+
+</menu>

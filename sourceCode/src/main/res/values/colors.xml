@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#008577</color>
+    <color name="colorPrimaryDark">#00574B</color>
+    <color name="colorAccent">#03A9F4</color>
+
+    <color name="black_overlay">#66000000</color>
+    <color name="year">#999999</color>
+    <color name="title">#222222</color>
+    <color name="trans1">#96d8b3b3</color>
+    <color name="trans2">#9692b1ba</color>
+    <color name="trans3">#c8afc3c9</color>
+    <color name="trans4">#64afc3c9</color>
+    <color name="trans5">#C8323536</color>
+    <color name="trans6">#eb202121</color>
+    <color name="trans7">#a8c4d3d7</color>
+    <color name="blue_1">#F05163C5</color>
+    <color name="white_fog">#c4c4c4</color>
+    <color name="ALERT">#c8e4ba3d</color>
+    <color name="CONFIRM">#c84cb928</color>
+    <color name="INFO">#c82bb0b4</color>
+    <color name="ERROR">#d9f10c0c</color>
+
+</resources>
