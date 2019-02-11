@@ -7,33 +7,23 @@
     android:id="@+id/mainActivityLayout"
     tools:context=".MainActivity">
 
-    <ScrollView
+    <com.metalurgus.longtextview.LongTextView
+        android:id="@+id/testFile"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:text="@string/space"
+        android:textColorLink="@color/blue_1"
+        android:textIsSelectable="true"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
-
-            <TextView
-                android:id="@+id/testFile"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:text="@string/space"
-                android:textColorLink="@color/blue_1"
-                android:textIsSelectable="true"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
-
-        </LinearLayout>
-    </ScrollView>
+        app:layout_constraintTop_toTopOf="parent"
+        app:gravity="left|top"
+        app:maxLinesPerItem="2"
+        app:textColor="@color/title"
+        app:textSize="12sp" />
 
 
 </android.support.constraint.ConstraintLayout>

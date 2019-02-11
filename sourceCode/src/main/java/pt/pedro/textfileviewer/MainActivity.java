@@ -4,18 +4,22 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Build;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.constraint.ConstraintLayout;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.WindowManager;
-import android.widget.TextView;
+
+import com.metalurgus.longtextview.LongTextView;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -30,7 +34,9 @@ public class MainActivity extends AppCompatActivity {
     private ConstraintLayout mainActivityLayout;
     private boolean firstBack = true;
     private static final int READ_REQUEST_CODE = 42;
-    private TextView testFile;
+    private LongTextView testFile;
+    private Handler handlerInputTenMili;
+    private boolean isLoadingFile = false;
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -41,7 +47,6 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle item selection
         firstBack = true;
         testFile.setText(" ");
         switch (item.getItemId()) {
@@ -57,6 +62,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         mContext = this;
         logCat = new LogCatUtil(mContext);
         mainActivityLayout = findViewById(R.id.mainActivityLayout);
@@ -95,11 +101,6 @@ public class MainActivity extends AppCompatActivity {
         String[] PERMISSIONS = {
                 Manifest.permission.READ_EXTERNAL_STORAGE,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE
-                //Manifest.permission.ACCESS_WIFI_STATE,
-                //Manifest.permission.CHANGE_WIFI_STATE,
-                //Manifest.permission.ACCESS_FINE_LOCATION,
-                //Manifest.permission.ACCESS_COARSE_LOCATION,
-                //Manifest.permission.INTERNET
         };
 
         hasPermissions(this, PERMISSIONS);
@@ -123,13 +124,14 @@ public class MainActivity extends AppCompatActivity {
         if (!result_permission) {
             logCat.errorPopUp("Permissions", "Please accept the permissions!!!\nIt is necessary to accept the permissions to run da app!!!", true);
         } else {
-            //logCat.snackBar(mainActivityLayout, "Tudo OK", true, LogCatUtil.INFO_TYPE.CONFIRM);
             startAppConnection();
         }
     }
 
     private void startAppConnection() {
         logCat.infoToast("Welcome to Text File Viewer", false);
+        handlerInputTenMili = new Handler();
+        handlerInputTenMili.postDelayed(counterTenMili, 1);
     }
 
     private void performFileSearch() {
@@ -144,15 +146,29 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent resultData) {
         if (requestCode == READ_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
-            Uri uri = null;
+            isLoadingFile = true;
+            final Uri uri;
             if (resultData != null) {
                 uri = resultData.getData();
-                try {
-                    readTextFromUri(uri);
-                } catch (IOException e) {
-                    logCat.snackBar(mainActivityLayout, "Error open file text.\n"+e.toString(), true, LogCatUtil.INFO_TYPE.ERROR);
-                    e.printStackTrace();
-                }
+                logCat.showDialog("Reading File, Please Wait", false);
+                AsyncTask.execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            readTextFromUri(uri);
+                        } catch (final IOException e) {
+                            e.printStackTrace();
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    isLoadingFile = false;
+                                    logCat.deleteDialog();
+                                    logCat.snackBar(mainActivityLayout, "Error open file text.\n" + e.toString(), true, LogCatUtil.INFO_TYPE.ERROR);
+                                }
+                            });
+                        }
+                    }
+                });
             }
         }
     }
@@ -161,16 +177,42 @@ public class MainActivity extends AppCompatActivity {
         if(Objects.requireNonNull(getContentResolver().getType(uri)).split("/")[0].equals("text")) {
             InputStream inputStream = getContentResolver().openInputStream(uri);
             BufferedReader reader = new BufferedReader(new InputStreamReader(Objects.requireNonNull(inputStream)));
-            StringBuilder stringBuilder = new StringBuilder();
+            final StringBuilder stringBuilder = new StringBuilder();
             String line;
             while ((line = reader.readLine()) != null) {
-                stringBuilder.append(line).append("\n");
+                stringBuilder.append("]").append(line).append("\n");
             }
-            testFile.setText(stringBuilder.toString());
-            //logCat.terminal("core_", stringBuilder.toString());
-        }else{
+            AsyncTask.execute(new Runnable() {
+                @Override
+                public void run() {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            testFile.setText(stringBuilder.toString());
+                            isLoadingFile = false;
+                            //logCat.deleteDialog();
+                        }
+                    });
+                }
+            });
+        } else {
             logCat.terminal("core_", getContentResolver().getType(uri));
             logCat.snackBar(mainActivityLayout, "File not supported ( "+getContentResolver().getType(uri)+" )",true, LogCatUtil.INFO_TYPE.ALERT);
+            logCat.deleteDialog();
+            isLoadingFile = false;
         }
     }
+
+    boolean firstPulse = true;
+    private Runnable counterTenMili = new Runnable() {
+        public void run() {
+            handlerInputTenMili.postDelayed(this, 10);
+            if(isLoadingFile && firstPulse){
+                firstPulse = false;
+            }else if(!isLoadingFile && ! firstPulse){
+                firstPulse = true;
+                logCat.deleteDialog();
+            }
+        }
+    };
 }

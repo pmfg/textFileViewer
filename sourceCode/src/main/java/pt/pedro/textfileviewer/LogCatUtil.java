@@ -6,6 +6,7 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Color;
+import android.os.Looper;
 import android.support.constraint.ConstraintLayout;
 import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
@@ -36,6 +37,7 @@ class LogCatUtil {
     }
 
     private ProgressDialog pDialog;
+    private boolean isDialogCancel = true;
 
     LogCatUtil(Context mContext) {
         this.mContext = mContext;
@@ -105,17 +107,45 @@ class LogCatUtil {
         toast.show();
     }
 
-    void showDialog(String title){
-        if(pDialog != null)
-            pDialog.dismiss();
-        pDialog = new ProgressDialog(context);
-        pDialog.setMessage(title);
-        pDialog.setCancelable(false);
-        pDialog.show();
+    void showDialog(final String title, final boolean cancelable){
+        if (Looper.myLooper() == null){
+            Looper.prepare();
+        }
+
+        context.runOnUiThread(new Runnable() {
+            public void run() {
+                if (Looper.myLooper() == null){
+                    Looper.prepare();
+                }
+                if(pDialog != null)
+                    pDialog.dismiss();
+                pDialog = new ProgressDialog(context);
+                pDialog.setMessage(title);
+                pDialog.setCancelable(false);
+                if(cancelable) {
+                    pDialog.setButton(DialogInterface.BUTTON_NEGATIVE, "Cancel", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            deleteDialog();
+                            isDialogCancel = true;
+                        }
+                    });
+                }
+                pDialog.show();
+            }
+        });
+        isDialogCancel = false;
     }
 
-    void updateDialog(String text){
-        pDialog.setMessage(text);
+    void updateDialog(final String text){
+        context.runOnUiThread(new Runnable() {
+            public void run() {
+                if (Looper.myLooper() == null) {
+                    Looper.prepare();
+                }
+                pDialog.setMessage(text);
+            }
+        });
     }
 
     void deleteDialog(){
@@ -124,6 +154,14 @@ class LogCatUtil {
             if(pDialog != null)
                 pDialog.dismiss();
         }catch (Exception ignored){}
+    }
+
+    boolean isDialogCancel() {
+        if(isDialogCancel) {
+            isDialogCancel = false;
+            return true;
+        }else
+            return false;
     }
 
     void snackBar(ConstraintLayout constraintlayout, String text, boolean longShow, INFO_TYPE type){
